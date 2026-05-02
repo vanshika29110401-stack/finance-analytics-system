@@ -1,22 +1,24 @@
-# 💰 Finance Analytics & Management System
+# Finance Analytics & Management System
 
-A premium fintech web application built using Python, SQLite, and Streamlit.
+## Description
+A Python-based financial management system that helps users analyze income, expenses, savings, and future financial growth.
 
 ## Features
-- User Login & Registration
-- Expense & Income Tracking
-- Financial Dashboard
-- Monthly Trend Analysis
-- Goal Tracking (Car, House, etc.)
+- User Registration & Login
+- Monthly Income & Expense Tracking
+- Expense Ratio Analysis
+- Financial Summary Dashboard
+- Future Savings Prediction
+- Goal Planning System
 - AI-based Financial Suggestions
-- 10-Year Financial Projection
-- Data Export (CSV)
+- Income Growth Simulation
+- Download Report Feature
 
-## Tech Stack
+## Technologies Used
 - Python
 - SQLite
 - Streamlit
 - Plotly
 
 ## Deployment
-Deployed on Streamlit Cloud for real-time usage.
+Deployed using Streamlit Cloud.
