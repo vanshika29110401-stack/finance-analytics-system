@@ -2,34 +2,27 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import plotly.express as px
-from datetime import datetime
 
-# ---------- PAGE CONFIG ----------
-st.set_page_config(page_title="Fintech Dashboard", layout="wide")
+# ---------- CONFIG ----------
+st.set_page_config(page_title="Finance System", layout="wide")
 
-# ---------- STYLING ----------
+# ---------- STYLE ----------
 st.markdown("""
 <style>
 .stApp { background-color: #0e1117; color: white; }
-
-[data-testid="metric-container"] {
-    background: linear-gradient(135deg, #1f2937, #111827);
-    border-radius: 12px;
-    padding: 15px;
-}
+h1,h2,h3 { color: #00c6ff; }
 
 .stButton>button {
-    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    background: linear-gradient(90deg,#00c6ff,#0072ff);
     color: white;
+    border-radius: 8px;
+}
+
+[data-testid="metric-container"] {
+    background: #1c1f26;
+    padding: 15px;
     border-radius: 10px;
-    font-weight: bold;
 }
-
-section[data-testid="stSidebar"] {
-    background-color: #111827;
-}
-
-h1, h2, h3 { color: #00c6ff; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -45,180 +38,165 @@ password TEXT
 )
 """)
 
-cur.execute("""
-CREATE TABLE IF NOT EXISTS transactions (
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-user TEXT,
-type TEXT,
-category TEXT,
-amount REAL,
-date TEXT
-)
-""")
-
-cur.execute("""
-CREATE TABLE IF NOT EXISTS goals (
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-user TEXT,
-goal_name TEXT,
-target REAL,
-saved REAL
-)
-""")
-
 conn.commit()
 
 # ---------- HEADER ----------
-st.title("💳 Premium Finance Analytics System")
+st.title("💰 Finance Analytics & Management System")
 
 # ---------- AUTH ----------
-menu = ["Login", "Register"]
-choice = st.sidebar.selectbox("Menu", menu)
+menu = ["Register","Login"]
+choice = st.sidebar.radio("Menu", menu)
 
 if choice == "Register":
     st.subheader("Create Account")
-    new_user = st.text_input("Username")
-    new_pass = st.text_input("Password", type="password")
+    user = st.text_input("Username")
+    pwd = st.text_input("Password", type="password")
 
     if st.button("Register"):
         try:
-            cur.execute("INSERT INTO users VALUES (NULL,?,?)",(new_user,new_pass))
+            cur.execute("INSERT INTO users(username,password) VALUES (?,?)",(user,pwd))
             conn.commit()
-            st.success("Account created!")
+            st.success("Account Created! Go to Login")
         except:
-            st.error("User already exists")
+            st.error("Username already exists")
 
-if choice == "Login":
+elif choice == "Login":
     st.subheader("Login")
     user = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    pwd = st.text_input("Password", type="password")
 
     if st.button("Login"):
         result = cur.execute(
             "SELECT * FROM users WHERE username=? AND password=?",
-            (user,password)
+            (user,pwd)
         ).fetchone()
 
         if result:
+            st.session_state.logged = True
             st.session_state.user = user
-            st.success("Logged in!")
+            st.success("Login Successful")
+        else:
+            st.error("Invalid Credentials")
 
-# ---------- DASHBOARD ----------
-if "user" in st.session_state:
+# ---------- MAIN APP ----------
+if "logged" in st.session_state:
 
     st.sidebar.success(f"Welcome {st.session_state.user}")
 
-    # ---------- ADD TRANSACTION ----------
-    st.subheader("➕ Add Transaction")
+    # ---------- INPUT ----------
+    st.header("💰 Monthly Financial Input")
+
+    income = st.number_input("Enter Monthly Income (₹)", min_value=0.0)
+
+    st.subheader("💸 Expenses (Category-wise)")
+
+    categories = ["Food","Rent","Travel","Shopping","Bills","Other"]
+
+    expenses = {}
+    total_expense = 0
+
+    for cat in categories:
+        val = st.number_input(f"{cat}", min_value=0.0, key=cat)
+        expenses[cat] = val
+        total_expense += val
+
+    savings = income - total_expense
+
+    # ---------- SUMMARY ----------
+    st.header("📊 Financial Summary")
 
     col1, col2, col3 = st.columns(3)
+    col1.metric("Income", income)
+    col2.metric("Expense", total_expense)
+    col3.metric("Savings", savings)
 
-    with col1:
-        t_type = st.selectbox("Type", ["Income","Expense"])
-    with col2:
-        category = st.selectbox("Category",
-            ["Food","Rent","Travel","Shopping","Salary","Freelance","Other"])
-    with col3:
-        amount = st.number_input("Amount", min_value=0.0)
+    ratio = (total_expense / income * 100) if income > 0 else 0
+    st.write(f"Expense Ratio: {round(ratio,2)}%")
 
-    if st.button("Add Transaction"):
-        cur.execute("INSERT INTO transactions VALUES (NULL,?,?,?,?,?)",
-                    (st.session_state.user, t_type, category, amount, str(datetime.now())))
-        conn.commit()
-        st.success("Transaction Added")
+    # ---------- CHART ----------
+    expense_df = pd.DataFrame({
+        "Category": list(expenses.keys()),
+        "Amount": list(expenses.values())
+    })
 
-    # ---------- LOAD DATA ----------
-    df = pd.read_sql_query(
-        f"SELECT * FROM transactions WHERE user='{st.session_state.user}'",
-        conn
-    )
+    expense_df = expense_df[expense_df["Amount"] > 0]
 
-    if not df.empty:
+    if not expense_df.empty:
+        fig = px.pie(expense_df, names="Category", values="Amount",
+                     template="plotly_dark")
+        st.plotly_chart(fig, use_container_width=True)
 
-        df["date"] = pd.to_datetime(df["date"])
-        df["month"] = df["date"].dt.to_period("M").astype(str)
+    # ---------- FUTURE ----------
+    st.header("📈 Future Projection")
 
-        income = df[df["type"]=="Income"]["amount"].sum()
-        expense = df[df["type"]=="Expense"]["amount"].sum()
-        savings = income - expense
+    years = st.slider("Select Years", 1, 10, 5)
 
-        # ---------- METRICS ----------
-        col1, col2, col3 = st.columns(3)
-        col1.metric("💰 Income", income)
-        col2.metric("💸 Expense", expense)
-        col3.metric("💵 Savings", savings)
+    future = savings * 12 * years
+    st.info(f"Estimated savings after {years} years: ₹{future}")
 
-        # ---------- CHARTS ----------
-        st.subheader("📊 Analytics")
+    # ---------- GOAL ----------
+    st.header("🎯 Goal Planning")
 
-        fig1 = px.pie(
-            df, names="category", values="amount",
-            color_discrete_sequence=px.colors.sequential.Tealgrn,
-            template="plotly_dark"
-        )
-        st.plotly_chart(fig1, use_container_width=True)
+    goal = st.number_input("Enter Target Amount (₹)", min_value=0.0)
+    goal_years = st.selectbox("Time Period", [5,10])
 
-        fig2 = px.bar(
-            df, x="category", y="amount", color="type",
-            color_discrete_sequence=px.colors.qualitative.Set2,
-            template="plotly_dark"
-        )
-        st.plotly_chart(fig2, use_container_width=True)
+    if goal > 0:
+        required = goal / (goal_years * 12)
 
-        # ---------- TREND ----------
-        st.subheader("📈 Monthly Trend")
+        st.write(f"Required monthly saving: ₹{round(required,2)}")
 
-        trend = df.groupby(["month","type"])["amount"].sum().reset_index()
-        fig3 = px.line(
-            trend, x="month", y="amount", color="type",
-            color_discrete_sequence=px.colors.qualitative.Bold,
-            template="plotly_dark"
-        )
-        st.plotly_chart(fig3, use_container_width=True)
-
-        # ---------- GOALS ----------
-        st.subheader("🎯 Goal Tracking")
-
-        goal_name = st.text_input("Goal (Car/House/etc)")
-        target = st.number_input("Target Amount", min_value=0.0)
-
-        if st.button("Set Goal"):
-            cur.execute("INSERT INTO goals VALUES (NULL,?,?,?,?)",
-                        (st.session_state.user, goal_name, target, savings))
-            conn.commit()
-
-        goals = pd.read_sql_query(
-            f"SELECT * FROM goals WHERE user='{st.session_state.user}'",
-            conn
-        )
-
-        if not goals.empty:
-            for _, row in goals.iterrows():
-                progress = row["saved"] / row["target"] if row["target"] > 0 else 0
-                st.write(f"{row['goal_name']} Progress")
-                st.progress(progress)
-
-        # ---------- AI ----------
-        st.subheader("🤖 AI Advisor")
-
-        ratio = (expense / income)*100 if income > 0 else 0
-        st.write(f"Expense Ratio: {round(ratio,2)}%")
-
-        if ratio > 80:
-            st.error("Reduce expenses urgently")
-        elif ratio > 50:
-            st.warning("Control spending")
+        if savings >= required:
+            st.success("You are on track!")
         else:
-            st.success("Good financial health")
+            st.warning("Increase savings to reach goal")
 
-        # ---------- FUTURE ----------
-        future = savings * 12 * 10
-        st.info(f"📊 10-Year Savings: ₹{future}")
+    # ---------- AI SUGGESTION ----------
+    st.header("🤖 AI Financial Advisor")
 
-        # ---------- EXPORT ----------
-        st.subheader("📥 Export Data")
-        csv = df.to_csv(index=False)
-        st.download_button("Download Report", csv, "finance_report.csv")
-
+    if ratio > 80:
+        st.error("You are overspending. Reduce expenses.")
+    elif ratio > 50:
+        st.warning("Try to control spending.")
     else:
-        st.info("No transactions yet")
+        st.success("Good financial discipline!")
+
+    if savings <= 0:
+        st.error("No savings. Reduce expenses.")
+    elif savings < income * 0.2:
+        st.warning("Increase savings to at least 20%.")
+    else:
+        st.success("Excellent savings habit!")
+
+    # ---------- GROWTH ----------
+    st.header("📊 Income Growth Simulation")
+
+    option = st.selectbox("Choose Strategy",
+                          ["Freelancing","Investing","Business"])
+
+    if option == "Freelancing":
+        future_income = income + 20000
+    elif option == "Investing":
+        future_income = income * 1.8
+    else:
+        future_income = income * 2.5
+
+    total_future = future_income * 12 * 10
+
+    st.info(f"Estimated income after 10 years: ₹{round(total_future,2)}")
+
+    # ---------- EXPORT ----------
+    st.header("📥 Download Report")
+
+    report = pd.DataFrame({
+        "Income":[income],
+        "Expense":[total_expense],
+        "Savings":[savings],
+        "Expense Ratio":[ratio]
+    })
+
+    csv = report.to_csv(index=False)
+
+    st.download_button("Download Report", csv, "finance_report.csv")
+
+else:
+    st.info("Please Login to Continue")
