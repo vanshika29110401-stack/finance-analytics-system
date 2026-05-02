@@ -4,14 +4,15 @@ A simple and clear financial analysis system.
 
 ## Features
 - Login/Register
-- Income & Expense tracking
-- Charts
-- Future prediction
-- Goal planning
-- AI suggestions
-- Financial Score (Gauge)
-- Health Badge
-- Download report
+- Income & Expense tracking (clear categories)
+- Expense visualization (charts)
+- Future savings prediction
+- Goal planning (with clear instructions)
+- AI financial advice
+- Income growth simulation (10 real-world methods)
+- Financial score (gauge meter)
+- Final financial status (Gold/Silver/Bronze)
+- Downloadable report
 
-## Tech
+## Tech Stack
 Python, SQLite, Streamlit, Plotly
