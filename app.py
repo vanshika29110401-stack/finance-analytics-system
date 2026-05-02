@@ -35,7 +35,6 @@ conn.commit()
 
 # ---------- HEADER ----------
 st.title("💰 Finance Analytics & Management System")
-
 st.write("👉 Enter your financial details and get a complete, easy-to-understand analysis.")
 
 # ---------- AUTH ----------
@@ -81,54 +80,55 @@ if "logged" in st.session_state:
 
     # STEP 1
     st.header("Step 1: Enter Monthly Income")
-    st.write("👉 Enter the total money you earn in one month (salary, pocket money, etc.)")
+    st.write("👉 Enter the total money you earn in one month")
 
     income = st.number_input("Monthly Income (₹)", min_value=0.0)
 
-    # STEP 2 
-st.header("Step 2: Enter Monthly Expenses")
+    # STEP 2 (VERTICAL CLEAR)
+    st.header("Step 2: Enter Monthly Expenses")
+    st.write("👉 Enter how much you spend in each category")
 
-st.write("👉 Enter how much you spend in each category (one by one)")
+    expenses = {}
+    total_expense = 0
 
-expenses = {}
-total_expense = 0
+    food = st.number_input("Enter how much you spend on Food (₹)", min_value=0.0)
+    expenses["Food"] = food
+    total_expense += food
 
-# Individual clear inputs
-food = st.number_input("Enter how much you spend on Food (₹)", min_value=0.0)
-expenses["Food"] = food
-total_expense += food
+    rent = st.number_input("Enter how much you spend on Rent (₹)", min_value=0.0)
+    expenses["Rent"] = rent
+    total_expense += rent
 
-rent = st.number_input("Enter how much you spend on Rent (₹)", min_value=0.0)
-expenses["Rent"] = rent
-total_expense += rent
+    travel = st.number_input("Enter how much you spend on Travel (₹)", min_value=0.0)
+    expenses["Travel"] = travel
+    total_expense += travel
 
-travel = st.number_input("Enter how much you spend on Travel (₹)", min_value=0.0)
-expenses["Travel"] = travel
-total_expense += travel
+    shopping = st.number_input("Enter how much you spend on Shopping (₹)", min_value=0.0)
+    expenses["Shopping"] = shopping
+    total_expense += shopping
 
-shopping = st.number_input("Enter how much you spend on Shopping (₹)", min_value=0.0)
-expenses["Shopping"] = shopping
-total_expense += shopping
+    bills = st.number_input("Enter how much you spend on Bills (₹)", min_value=0.0)
+    expenses["Bills"] = bills
+    total_expense += bills
 
-bills = st.number_input("Enter how much you spend on Bills (₹)", min_value=0.0)
-expenses["Bills"] = bills
-total_expense += bills
+    entertainment = st.number_input("Enter how much you spend on Entertainment (₹)", min_value=0.0)
+    expenses["Entertainment"] = entertainment
+    total_expense += entertainment
 
-entertainment = st.number_input("Enter how much you spend on Entertainment (₹)", min_value=0.0)
-expenses["Entertainment"] = entertainment
-total_expense += entertainment
+    healthcare = st.number_input("Enter how much you spend on Healthcare (₹)", min_value=0.0)
+    expenses["Healthcare"] = healthcare
+    total_expense += healthcare
 
-healthcare = st.number_input("Enter how much you spend on Healthcare (₹)", min_value=0.0)
-expenses["Healthcare"] = healthcare
-total_expense += healthcare
+    education = st.number_input("Enter how much you spend on Education (₹)", min_value=0.0)
+    expenses["Education"] = education
+    total_expense += education
 
-education = st.number_input("Enter how much you spend on Education (₹)", min_value=0.0)
-expenses["Education"] = education
-total_expense += education
+    other = st.number_input("Enter how much you spend on Other (₹)", min_value=0.0)
+    expenses["Other"] = other
+    total_expense += other
 
-other = st.number_input("Enter how much you spend on Other expenses (₹)", min_value=0.0)
-expenses["Other"] = other
-total_expense += other
+    savings = income - total_expense
+    ratio = (total_expense / income * 100) if income > 0 else 0
 
     # STEP 3
     st.header("Step 3: Financial Summary")
@@ -141,7 +141,6 @@ total_expense += other
     st.write(f"👉 Expense Ratio: {round(ratio,2)}%")
 
     st.markdown("""
-Meaning:
 - 🟢 Below 50% → Good  
 - 🟡 50–80% → Moderate  
 - 🔴 Above 80% → Overspending  
@@ -164,92 +163,68 @@ Meaning:
     # STEP 5
     st.header("Step 5: Future Savings")
 
-    st.write("👉 See how much you can save if you continue this spending pattern")
-
-    years = st.slider("Select number of years", 1, 10, 5)
+    years = st.slider("Select years", 1, 10, 5)
     future = savings * 12 * years
 
-    st.info(f"👉 After {years} years, your estimated savings will be ₹{round(future,2)}")
+    st.info(f"👉 After {years} years, you may save ₹{round(future,2)}")
 
-    # STEP 6 (IMPROVED CLEAR INSTRUCTION)
+    # STEP 6
     st.header("Step 6: Goal Planning")
 
-    st.write("""
-👉 Enter your financial goal:
+    st.write("👉 Enter your goal amount and years to achieve it")
 
-- Example: Buying a car, house, or saving ₹5,00,000  
-- Enter the **total amount you want to achieve**  
-- Then select **in how many years** you want to achieve it  
-""")
-
-    goal = st.number_input("Enter your Target Amount (₹)", min_value=0.0)
-    goal_years = st.selectbox("Select number of years to achieve goal", [3,5,10])
+    goal = st.number_input("Target Amount (₹)", min_value=0.0)
+    goal_years = st.selectbox("Years", [3,5,10])
 
     if goal > 0:
         required = goal / (goal_years * 12)
 
-        st.write(f"👉 To reach this goal, you must save ₹{round(required,2)} per month")
+        st.write(f"👉 You must save ₹{round(required,2)} per month")
 
         if savings >= required:
-            st.success("🟢 You are on track to achieve your goal")
+            st.success("🟢 On track")
         else:
-            st.warning("🟡 You need to increase your monthly savings")
+            st.warning("🟡 Increase savings")
 
     # STEP 7
-    st.header("Step 7: AI Financial Advice")
+    st.header("Step 7: AI Advice")
 
     if ratio > 80:
-        st.error("🔴 You are overspending. Try reducing unnecessary expenses.")
+        st.error("🔴 You are overspending")
     elif ratio > 50:
-        st.warning("🟡 You should control your expenses.")
+        st.warning("🟡 Control expenses")
     else:
-        st.success("🟢 Your spending is well managed.")
+        st.success("🟢 Good spending")
 
     if savings <= 0:
-        st.error("🔴 You are not saving money.")
-    elif savings < income * 0.2:
-        st.warning("🟡 Try to save at least 20% of your income.")
+        st.error("🔴 No savings")
+    elif savings < income*0.2:
+        st.warning("🟡 Increase savings")
     else:
-        st.success("🟢 You have a strong saving habit.")
+        st.success("🟢 Strong savings")
 
     # STEP 8
     st.header("Step 8: Income Growth Simulation")
 
-    st.write("👉 Choose a practical way to increase your income in the future")
-
     options = [
-        "Freelancing",
-        "Stock Market Investing",
-        "Mutual Funds (SIP)",
-        "Real Estate",
-        "YouTube / Content Creation",
-        "Online Business / E-commerce",
-        "Startup / Tech Business",
-        "Consulting / Coaching",
-        "Affiliate Marketing",
-        "Online Teaching / Courses"
+        "Freelancing","Stock Market","Mutual Funds","Real Estate",
+        "YouTube","E-commerce","Startup","Consulting",
+        "Affiliate Marketing","Teaching"
     ]
 
-    choice = st.selectbox("Select income growth method", options)
-    g_years = st.slider("Select years for growth", 1, 10, 5)
+    choice = st.selectbox("Select method", options)
+    g_years = st.slider("Years for growth",1,10,5)
 
-    multipliers = {
-        "Freelancing":1.5,
-        "Stock Market Investing":2,
-        "Mutual Funds (SIP)":1.8,
-        "Real Estate":2.2,
-        "YouTube / Content Creation":2.5,
-        "Online Business / E-commerce":2.8,
-        "Startup / Tech Business":3,
-        "Consulting / Coaching":2.3,
-        "Affiliate Marketing":2,
-        "Online Teaching / Courses":2.2
+    mult = {
+        "Freelancing":1.5,"Stock Market":2,"Mutual Funds":1.8,
+        "Real Estate":2.2,"YouTube":2.5,"E-commerce":2.8,
+        "Startup":3,"Consulting":2.3,"Affiliate Marketing":2,"Teaching":2.2
     }
 
-    future_income = income * multipliers[choice]
+    future_income = income * mult[choice]
     total_future = future_income * 12 * g_years
 
-    st.info(f"👉 Estimated total income after {g_years} years: ₹{round(total_future,2)}")
+    st.info(f"👉 Estimated income after {g_years} years: ₹{round(total_future,2)}")
 
     # STEP 9
     st.header("Step 9: Financial Score")
@@ -257,7 +232,7 @@ Meaning:
     score = 0
 
     if income > 0:
-        sr = savings / income
+        sr = savings/income
         if sr >= 0.3: score += 40
         elif sr >= 0.2: score += 30
         elif sr >= 0.1: score += 20
@@ -275,32 +250,24 @@ Meaning:
         mode="gauge+number",
         value=score,
         title={'text': "Financial Score"},
-        gauge={
-            'axis': {'range': [0,100]},
-            'steps': [
-                {'range':[0,50],'color':'red'},
-                {'range':[50,80],'color':'yellow'},
-                {'range':[80,100],'color':'green'}
-            ]
-        }
+        gauge={'axis': {'range': [0,100]}}
     ))
 
     st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("""
-Score Meaning:
 - 🟢 80–100 → Excellent  
 - 🟡 50–79 → Average  
 - 🔴 Below 50 → Needs Improvement  
 """)
 
     # STEP 10
-    st.header("Step 10: Final Financial Status")
+    st.header("Step 10: Final Result")
 
     if score >= 80:
-        st.success("🟢 GOLD – Excellent Financial Health")
+        st.success("🟢 GOLD – Excellent")
     elif score >= 50:
-        st.warning("🟡 SILVER – Stable Condition")
+        st.warning("🟡 SILVER – Average")
     else:
         st.error("🔴 BRONZE – Needs Improvement")
 
