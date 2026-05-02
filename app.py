@@ -85,35 +85,50 @@ if "logged" in st.session_state:
 
     income = st.number_input("Monthly Income (₹)", min_value=0.0)
 
-    # STEP 2
-    st.header("Step 2: Enter Monthly Expenses")
-    st.write("👉 Enter how much you spend in each category below")
+    # STEP 2 
+st.header("Step 2: Enter Monthly Expenses")
 
-    expenses = {}
-    total_expense = 0
+st.write("👉 Enter how much you spend in each category (one by one)")
 
-    categories = [
-        "Food Expense (₹)",
-        "Rent Expense (₹)",
-        "Travel Expense (₹)",
-        "Shopping Expense (₹)",
-        "Bills Expense (₹)",
-        "Entertainment Expense (₹)",
-        "Healthcare Expense (₹)",
-        "Education Expense (₹)",
-        "Other Expense (₹)"
-    ]
+expenses = {}
+total_expense = 0
 
-    cols = st.columns(3)
+# Individual clear inputs
+food = st.number_input("Enter how much you spend on Food (₹)", min_value=0.0)
+expenses["Food"] = food
+total_expense += food
 
-    for i, cat in enumerate(categories):
-        with cols[i % 3]:
-            val = st.number_input(cat, min_value=0.0, key=cat)
-            expenses[cat] = val
-            total_expense += val
+rent = st.number_input("Enter how much you spend on Rent (₹)", min_value=0.0)
+expenses["Rent"] = rent
+total_expense += rent
 
-    savings = income - total_expense
-    ratio = (total_expense / income * 100) if income > 0 else 0
+travel = st.number_input("Enter how much you spend on Travel (₹)", min_value=0.0)
+expenses["Travel"] = travel
+total_expense += travel
+
+shopping = st.number_input("Enter how much you spend on Shopping (₹)", min_value=0.0)
+expenses["Shopping"] = shopping
+total_expense += shopping
+
+bills = st.number_input("Enter how much you spend on Bills (₹)", min_value=0.0)
+expenses["Bills"] = bills
+total_expense += bills
+
+entertainment = st.number_input("Enter how much you spend on Entertainment (₹)", min_value=0.0)
+expenses["Entertainment"] = entertainment
+total_expense += entertainment
+
+healthcare = st.number_input("Enter how much you spend on Healthcare (₹)", min_value=0.0)
+expenses["Healthcare"] = healthcare
+total_expense += healthcare
+
+education = st.number_input("Enter how much you spend on Education (₹)", min_value=0.0)
+expenses["Education"] = education
+total_expense += education
+
+other = st.number_input("Enter how much you spend on Other expenses (₹)", min_value=0.0)
+expenses["Other"] = other
+total_expense += other
 
     # STEP 3
     st.header("Step 3: Financial Summary")
